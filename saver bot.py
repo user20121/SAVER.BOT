@@ -39,7 +39,7 @@ except ImportError:
 # ==================== KONFIGURATSIYA ====================
 
 # TOKENNI TO'G'RIDAN-TO'G'RI KODGA YOZAMIZ (dotenv ishlamasa)
-BOT_TOKEN = "7999878066:AAHC-Kqe2rmcL3tutbQtFlzldgwoc9D-Rpc"  # Sizning tokeningiz
+BOT_TOKEN = os.getenv("BOT_TOKEN)# Sizning tokeningiz
 
 # Sozlamalar
 MAX_FILE_SIZE = 50  # MB
@@ -575,4 +575,5 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+
     main()
