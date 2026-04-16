@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tosh-Qaychi-Qog'oz | Telegram Web App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #8e44ad 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.05"><circle cx="20" cy="20" r="2" fill="white"/><circle cx="80" cy="30" r="3" fill="white"/><circle cx="50" cy="70" r="2" fill="white"/><circle cx="90" cy="80" r="2" fill="white"/><circle cx="10" cy="90" r="1" fill="white"/></svg>');
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 40px;
+            padding: 24px 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .score-card {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .score-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .score-card.total {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .score-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .score-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .score-unit {
+            font-size: 14px;
+            margin-left: 4px;
+        }
+
+        .game-info {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .round-box {
+            background: white;
+            border-radius: 15px;
+            padding: 8px 16px;
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .round-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .round-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .win-box {
+            background: white;
+            border-radius: 15px;
+            padding: 8px 16px;
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .win-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .win-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .win-value.user-win {
+            color: #28a745;
+        }
+
+        .win-value.bot-win {
+            color: #dc3545;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .choice-btn {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 20px 10px;
+            font-size: 52px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .choice-btn:active::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .choice-btn:active {
+            transform: scale(0.92);
+        }
+
+        .choice-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            filter: grayscale(0.3);
+        }
+
+        .choice-name {
+            font-size: 14px;
+            margin-top: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .result-area {
+            background: linear-gradient(135deg, #f0f2f5 0%, #e9ecef 100%);
+            border-radius: 25px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .vs-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .player-choice, .bot-choice {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .player-choice {
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .bot-choice {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .choice-emoji {
+            font-size: 70px;
+            display: block;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .choice-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .vs-divider {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            background: white;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .result-message {
+            font-size: 22px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 15px;
+            animation: pulse 0.5s ease;
+        }
+
+        .result-message.win {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result-message.lose {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .result-message.draw {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .control-btns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .new-game-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .stop-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .reset-total-btn {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+            color: #333;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status.active {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+        }
+
+        .status.inactive {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: blink 1s infinite;
+        }
+
+        .status.active .status-dot {
+            background: #28a745;
+        }
+
+        .status.inactive .status-dot {
+            background: #dc3545;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+
+            .choice-btn {
+                font-size: 42px;
+                padding: 14px 8px;
+            }
+
+            .choice-emoji {
+                font-size: 55px;
+            }
+
+            .score-value {
+                font-size: 24px;
+            }
+
+            .result-message {
+                font-size: 18px;
+            }
+
+            .vs-divider {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .control-btn {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>🎮</span>
+                Tosh · Qaychi · Qog'oz
+                <span>🤖</span>
+            </h1>
+            <div class="subtitle">Bot bilan jang qiling!</div>
+        </div>
+
+        <div class="stats-row">
+            <div class="score-card">
+                <div class="score-label">🏆 JAMI O'YINLAR</div>
+                <div class="score-value" id="totalGames">0</div>
+            </div>
+            <div class="score-card total">
+                <div class="score-label">📊 JAMI HISOB</div>
+                <div class="score-value">
+                    <span id="totalUserScore">0</span>
+                    <span class="score-unit">:</span>
+                    <span id="totalBotScore">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <div class="round-box">
+                <div class="round-label">🎯 TUR</div>
+                <div class="round-value" id="currentRound">1</div>
+            </div>
+            <div class="win-box">
+                <div class="win-label">✅ SIZ YUTUQLARI</div>
+                <div class="win-value user-win" id="userWins">0</div>
+            </div>
+            <div class="win-box">
+                <div class="win-label">❌ BOT YUTUQLARI</div>
+                <div class="win-value bot-win" id="botWins">0</div>
+            </div>
+        </div>
+
+        <div class="choices">
+            <button class="choice-btn" data-choice="Tosh">
+                🪨
+                <div class="choice-name">TOSH</div>
+            </button>
+            <button class="choice-btn" data-choice="Qaychi">
+                ✂️
+                <div class="choice-name">QAYCHI</div>
+            </button>
+            <button class="choice-btn" data-choice="Qog'oz">
+                📄
+                <div class="choice-name">QOG'OZ</div>
+            </button>
+        </div>
+
+        <div class="result-area">
+            <div class="vs-container">
+                <div class="player-choice">
+                    <span class="choice-emoji" id="userEmoji">❓</span>
+                    <div class="choice-label">SIZNING TANLOVINGIZ</div>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="bot-choice">
+                    <span class="choice-emoji" id="botEmoji">❓</span>
+                    <div class="choice-label">BOT TANLOVI</div>
+                </div>
+            </div>
+            <div class="result-message" id="resultMessage">⚡ Tanlov qiling!</div>
+        </div>
+
+        <div class="control-btns">
+            <button class="control-btn new-game-btn" id="newGameBtn">
+                🔄 Yangi o'yin
+            </button>
+            <button class="control-btn stop-btn" id="stopBtn">
+                ⏹️ Stop
+            </button>
+            <button class="control-btn reset-total-btn" id="resetTotalBtn">
+                🗑️ Jami hisobni tozalash
+            </button>
+        </div>
+
+        <div class="status inactive" id="status">
+            <span class="status-dot"></span>
+            <span id="statusText">O'yin faol emas</span>
+        </div>
+    </div>
+
+    <script>
+        // Telegram Web App
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.enableClosingConfirmation();
+        }
+
+        // O'yin holati
+        let gameState = {
+            gameActive: false,
+            totalGames: 0,
+            totalUserScore: 0,
+            totalBotScore: 0,
+            currentUserWins: 0,
+            currentBotWins: 0,
+            currentRound: 1,
+            maxRounds: 3
+        };
+
+        // DOM elementlari
+        const elements = {
+            totalGames: document.getElementById('totalGames'),
+            totalUserScore: document.getElementById('totalUserScore'),
+            totalBotScore: document.getElementById('totalBotScore'),
+            currentRound: document.getElementById('currentRound'),
+            userWins: document.getElementById('userWins'),
+            botWins: document.getElementById('botWins'),
+            userEmoji: document.getElementById('userEmoji'),
+            botEmoji: document.getElementById('botEmoji'),
+            resultMessage: document.getElementById('resultMessage'),
+            status: document.getElementById('status'),
+            statusText: document.getElementById('statusText'),
+            choiceBtns: document.querySelectorAll('.choice-btn')
+        };
+
+        // Emoji va nomlar
+        const choiceMap = {
+            'Tosh': { emoji: '🪨', name: 'Tosh' },
+            'Qaychi': { emoji: '✂️', name: 'Qaychi' },
+            'Qog\'oz': { emoji: '📄', name: 'Qog\'oz' }
+        };
+
+        // Bot tanlovi
+        const botChoices = ['Tosh', 'Qaychi', 'Qog\'oz'];
+
+        function getBotChoice() {
+            return botChoices[Math.floor(Math.random() * botChoices.length)];
+        }
+
+        // Natijani hisoblash
+        function getResult(userChoice, botChoice) {
+            if (userChoice === botChoice) return 'draw';
+
+            if (
+                (userChoice === 'Tosh' && botChoice === 'Qaychi') ||
+                (userChoice === 'Qaychi' && botChoice === 'Qog\'oz') ||
+                (userChoice === 'Qog\'oz' && botChoice === 'Tosh')
+            ) {
+                return 'win';
+            }
+            return 'lose';
+        }
+
+        // UI yangilash
+        function updateUI() {
+            elements.totalGames.textContent = gameState.totalGames;
+            elements.totalUserScore.textContent = gameState.totalUserScore;
+            elements.totalBotScore.textContent = gameState.totalBotScore;
+            elements.currentRound.textContent = gameState.currentRound;
+            elements.userWins.textContent = gameState.currentUserWins;
+            elements.botWins.textContent = gameState.currentBotWins;
+        }
+
+        // O'yin holatini yangilash
+        function updateGameStatus() {
+            if (gameState.gameActive) {
+                elements.status.className = 'status active';
+                elements.statusText.textContent = '🎮 O'yin davom etmoqda';
+                elements.choiceBtns.forEach(btn => btn.classList.remove('disabled'));
+            } else {
+                elements.status.className = 'status inactive';
+                elements.statusText.textContent = '⏸️ O'yin faol emas';
+                elements.choiceBtns.forEach(btn => btn.classList.add('disabled'));
+            }
+        }
+
+        // O'yinni boshlash
+        function startGame() {
+            gameState.gameActive = true;
+            gameState.currentUserWins = 0;
+            gameState.currentBotWins = 0;
+            gameState.currentRound = 1;
+
+            // Result maydonini tozalash
+            elements.userEmoji.textContent = '❓';
+            elements.botEmoji.textContent = '❓';
+            elements.resultMessage.textContent = '🎯 ' + gameState.currentRound + '-tur! Tanlov qiling!';
+            elements.resultMessage.className = 'result-message';
+
+            updateUI();
+            updateGameStatus();
+
+            // Telegramga tebranish
+            if (tg) tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        // O'yinni to'xtatish
+        function stopGame() {
+            gameState.gameActive = false;
+            updateGameStatus();
+            elements.resultMessage.textContent = '⏹️ O\'yin to\'xtatildi. "Yangi o\'yin" tugmasini bosing!';
+            elements.resultMessage.className = 'result-message';
+
+            if (tg) tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Jami hisobni tozalash
+        function resetTotalScore() {
+            gameState.totalGames = 0;
+            gameState.totalUserScore = 0;
+            gameState.totalBotScore = 0;
+            updateUI();
+            elements.resultMessage.textContent = '🗑️ Jami hisob tozalandi!';
+            elements.resultMessage.className = 'result-message';
+
+            if (tg) tg.HapticFeedback.notificationOccurred('error');
+        }
+
+        // O'yin tugaganini tekshirish
+        function checkGameOver() {
+            if (gameState.currentUserWins === 2 || gameState.currentBotWins === 2) {
+                gameState.gameActive = false;
+                gameState.totalGames++;
+
+                if (gameState.currentUserWins > gameState.currentBotWins) {
+                    gameState.totalUserScore++;
+                    elements.resultMessage.textContent = '🏆 TABRIKLAYMAN! Siz g\'olib bo\'ldingiz! 🏆';
+                    elements.resultMessage.className = 'result-message win';
+                    if (tg) tg.HapticFeedback.notificationOccurred('success');
+                } else {
+                    gameState.totalBotScore++;
+                    elements.resultMessage.textContent = '🤖 Bot g\'olib bo\'ldi! Keyingi safar omad! 🤖';
+                    elements.resultMessage.className = 'result-message lose';
+                    if (tg) tg.HapticFeedback.notificationOccurred('warning');
+                }
+
+                updateUI();
+                updateGameStatus();
+                return true;
+            }
+            return false;
+        }
+
+        // O'yin o'ynash
+        function playGame(userChoice) {
+            if (!gameState.gameActive) {
+                elements.resultMessage.textContent = '⚠️ O\'yin faol emas! "Yangi o\'yin" tugmasini bosing!';
+                elements.resultMessage.className = 'result-message';
+                if (tg) tg.HapticFeedback.impactOccurred('error');
+                return;
+            }
+
+            const botChoice = getBotChoice();
+            const result = getResult(userChoice, botChoice);
+
+            // Emojilarni ko'rsatish
+            elements.userEmoji.textContent = choiceMap[userChoice].emoji;
+            elements.botEmoji.textContent = choiceMap[botChoice].emoji;
+
+            // Animatsiya uchun
+            elements.userEmoji.style.animation = 'none';
+            elements.botEmoji.style.animation = 'none';
+            setTimeout(() => {
+                elements.userEmoji.style.animation = 'bounce 0.5s ease';
+                elements.botEmoji.style.animation = 'bounce 0.5s ease';
+            }, 10);
+
+            let message = '';
+            let messageClass = '';
+
+            if (result === 'win') {
+                gameState.currentUserWins++;
+                message = '✅ SIZ YUTDINGIZ! +1';
+                messageClass = 'result-message win';
+                if (tg) tg.HapticFeedback.impactOccurred('heavy');
+            } else if (result === 'lose') {
+                gameState.currentBotWins++;
+                message = '❌ BOT YUTDI! Omad keyingi safar';
+                messageClass = 'result-message lose';
+                if (tg) tg.HapticFeedback.impactOccurred('heavy');
+            } else {
+                message = '🤝 DURANG! Yana urinib ko\'ring';
+                messageClass = 'result-message draw';
+                if (tg) tg.HapticFeedback.impactOccurred('light');
+            }
+
+            updateUI();
+
+            // O'yin tugaganligini tekshirish
+            if (checkGameOver()) {
+                return;
+            }
+
+            // Keyingi tur
+            gameState.currentRound++;
+
+            if (gameState.currentRound <= gameState.maxRounds) {
+                message += `\n🎯 ${gameState.currentRound}-tur! Tanlov qiling!`;
+            }
+
+            elements.resultMessage.textContent = message;
+            elements.resultMessage.className = messageClass;
+
+            // Agar 3 tur tugagan bo'lsa va hech kim 2 yutishga erishmagan bo'lsa
+            if (gameState.currentRound > gameState.maxRounds) {
+                gameState.gameActive = false;
+                gameState.totalGames++;
+
+                if (gameState.currentUserWins > gameState.currentBotWins) {
+                    gameState.totalUserScore++;
+                    elements.resultMessage.textContent = '🏆 O\'yin yakunlandi! Siz g\'olib! 🏆';
+                    elements.resultMessage.className = 'result-message win';
+                } else if (gameState.currentBotWins > gameState.currentUserWins) {
+                    gameState.totalBotScore++;
+                    elements.resultMessage.textContent = '🤖 O\'yin yakunlandi! Bot g\'olib! 🤖';
+                    elements.resultMessage.className = 'result-message lose';
+                } else {
+                    elements.resultMessage.textContent = '🤝 O\'yin durang yakunlandi!';
+                    elements.resultMessage.className = 'result-message draw';
+                }
+
+                updateUI();
+                updateGameStatus();
+            }
+        }
+
+        // Event listenerlar
+        elements.choiceBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const choice = btn.dataset.choice;
+                playGame(choice);
+            });
+        });
+
+        document.getElementById('newGameBtn').addEventListener('click', startGame);
+        document.getElementById('stopBtn').addEventListener('click', stopGame);
+        document.getElementById('resetTotalBtn').addEventListener('click', resetTotalScore);
+
+        // Boshlang'ich holat
+        updateUI();
+        updateGameStatus();
+
+        // Konsolga yozish
+        console.log('🎮 Tosh-Qaychi-Qog\'oz o\'yini yuklandi!');
+    </script>
+</body>
+</html>
